@@ -1,403 +1,171 @@
 # Student Management System
 
-A comprehensive full-stack student management system built with React, Node.js, Express, and MongoDB, fully containerized with Docker for easy deployment on AWS EC2.
+A full-stack student management app (React + Node + MongoDB) with Docker setup and a one-command production deploy using `docker-compose.prod.yml`.
 
-## Features
+This README focuses on how to run the project on an AWS EC2 instance (recommended: Ubuntu 22.04 LTS or Amazon Linux 2) using Docker Compose.
 
-- ✅ **Frontend**: React SPA with modern UI (Tailwind-inspired styling)
-- ✅ **Backend**: RESTful API with Node.js and Express
-- ✅ **Database**: MongoDB with persistent storage
-- ✅ **Docker**: Both frontend and backend containerized
-- ✅ **Nginx**: Reverse proxy for single-port access
-- ✅ **CRUD Operations**: Complete student management
-- ✅ **AWS EC2 Ready**: Optimized for cloud deployment
-- ✅ **Health Checks**: Built-in service monitoring
-- ✅ **Responsive Design**: Mobile-friendly UI
+---
 
-## Project Structure
+## Quick links
 
-```
-student-management-system/
-├── server.js                    # Backend Express server
-├── package.json                 # Backend dependencies
-├── Dockerfile                   # Backend Docker configuration
-├── init-mongo.sh               # MongoDB initialization
-├── frontend/
-│   ├── src/
-│   │   ├── App.js              # Main React component
-│   │   ├── App.css             # Styling
-│   │   ├── index.js            # React entry point
-│   │   └── components/
-│   │       ├── StudentList.js   # Student list component
-│   │       ├── StudentForm.js   # Add/Edit form component
-│   │       └── *.css           # Component styles
-│   ├── public/
-│   │   └── index.html          # HTML template
-│   ├── package.json            # Frontend dependencies
-│   ├── Dockerfile              # Frontend Docker config
-│   └── nginx.conf              # Frontend Nginx config
-├── docker-compose.yml          # Multi-port setup (dev)
-├── docker-compose.prod.yml     # Single-port setup (prod)
-├── nginx.conf                  # Main Nginx config
-├── .env                        # Environment variables
-└── README.md                   # This file
-```
+- Project root: [README.md](README.md)
+- Production compose: [docker-compose.prod.yml](docker-compose.prod.yml)
+- Development compose: [docker-compose.yml](docker-compose.yml)
 
-## Prerequisites
+---
 
-- Docker (v20.10+)
-- Docker Compose (v1.29+)
-- AWS EC2 instance (optional)
-- Node.js 18+ and MongoDB 6.0+ for local development (optional)
+## Prerequisites (EC2)
 
-## Quick Start (Development - Multi-Port)
+- An EC2 instance (Ubuntu 22.04 LTS or Amazon Linux 2) with at least 1 vCPU and 2GB RAM
+- Security Group open for:
+  - `22` (SSH)
+  - `80` (HTTP)
+  - `443` (HTTPS) — optional, for TLS
+- Docker & Docker Compose installed on the instance
 
-### 1. Build and Run Services
+---
+
+## Step-by-step: Deploy on AWS EC2 (recommended)
+
+1. Launch an EC2 instance (Ubuntu 22.04 LTS recommended).
+   - Use a key pair you control.
+   - Attach a Security Group allowing inbound 22, 80 (and 443 if using TLS).
+
+2. SSH into the instance:
 
 ```bash
-cd student-management-system
-docker-compose up --build
+ssh -i /path/to/key.pem ubuntu@YOUR_EC2_PUBLIC_IP
 ```
 
-This will:
-- Build Frontend and Backend images
-- Start MongoDB service with initialized data
-- Start the Express API server
-- Start React frontend
-- Setup internal Docker network
+3. Install Docker and Docker Compose (Ubuntu example):
 
-### 2. Access the Application
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **API Health**: http://localhost:5000/health
-- **MongoDB**: localhost:27017 (internal only)
-
-### 3. Test the Application
-
-Open http://localhost:3000 in your browser and:
-- View all students
-- Add a new student
-- Edit existing students
-- Delete students
-
-## Production Setup (AWS EC2 - Single Port)
-
-### 1. Build and Run with Nginx Reverse Proxy
-
-```bash
-docker-compose -f docker-compose.prod.yml up --build
-```
-
-### 2. Access the Application
-
-- **Frontend & API**: http://your-ec2-ip:80
-  - Frontend routes: `/`
-  - API routes: `/api/*`
-  - Health check: `/health`
-
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/students` | Get all students |
-| GET | `/api/students/:id` | Get a specific student |
-| POST | `/api/students` | Create a new student |
-| PUT | `/api/students/:id` | Update a student |
-| DELETE | `/api/students/:id` | Delete a student |
-
-## Student Data Model
-
-```json
-{
-  "_id": "ObjectId",
-  "name": "String (required)",
-  "email": "String (required, unique)",
-  "phone": "String (required)",
-  "rollNumber": "String (required, unique)",
-  "course": "String (required)",
-  "enrollmentDate": "Date (default: now)",
-  "gpa": "Number (0-4.0)",
-  "address": "String",
-  "createdAt": "Date",
-  "updatedAt": "Date"
-}
-```
-
-## Environment Variables
-
-Create or modify `.env` file:
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://admin:password@mongodb:27017/student-management?authSource=admin
-NODE_ENV=production
-MONGO_INITDB_ROOT_USERNAME=admin
-MONGO_INITDB_ROOT_PASSWORD=password
-MONGO_INITDB_DATABASE=student-management
-```
-
-⚠️ **For production**: Change default passwords and use AWS Secrets Manager.
-
-## Docker Commands
-
-### Start All Services
-```bash
-docker-compose up -d
-```
-
-### Start with Nginx (Single Port)
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### View Logs
-```bash
-docker-compose logs -f
-docker-compose logs -f app
-docker-compose logs -f frontend
-docker-compose logs -f mongodb
-```
-
-### Stop Services
-```bash
-docker-compose down
-```
-
-### Remove All Data (Including MongoDB)
-```bash
-docker-compose down -v
-```
-
-### Rebuild Images
-```bash
-docker-compose up --build -d
-```
-
-### Connect to MongoDB
-```bash
-docker exec -it student-management-mongodb mongosh -u admin -p password
-```
-
-## AWS EC2 Deployment
-
-### Prerequisites
-- Ubuntu 22.04 LTS or Amazon Linux 2 EC2 instance
-- Security Group allowing:
-  - Port 80 (HTTP)
-  - Port 443 (HTTPS - optional)
-  - Port 22 (SSH)
-
-### Step 1: Install Docker
-
-**For Ubuntu 22.04:**
 ```bash
 sudo apt-get update
-sudo apt-get install docker.io docker-compose-v2 -y
-sudo usermod -a -G docker $USER
-logout  # Log out and back in
+sudo apt-get install -y docker.io
+sudo apt-get install -y docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
 ```
 
-**For Amazon Linux 2:**
-```bash
-sudo yum install docker -y
-sudo service docker start
-sudo usermod -a -G docker ec2-user
-logout  # Log out and back in
-```
+Log out and back in (or start a new SSH session) so the `docker` group change takes effect.
 
-### Step 2: Clone Repository
+4. Clone this repository and switch to the project directory:
 
 ```bash
-git clone <your-repo-url>
-cd student-management-system
+git clone <YOUR_REPO_URL>
+cd pritom
 ```
 
-### Step 3: Update Environment Variables
+5. Create or review the `.env` file at the project root. Example values (change for production):
+
+```text
+PORT=5000
+MONGO_INITDB_ROOT_USERNAME=admin
+MONGO_INITDB_ROOT_PASSWORD=StrongPasswordHere
+MONGO_INITDB_DATABASE=student-management
+MONGODB_URI=mongodb://admin:StrongPasswordHere@mongodb:27017/student-management?authSource=admin
+NODE_ENV=production
+```
+
+Notes:
+- If you plan to use an external MongoDB (Atlas or managed), set `MONGODB_URI` to that connection string and remove the built-in MongoDB service from the compose file (or keep it as a fallback).
+- Never commit production credentials to the repo. Use AWS Secrets Manager or SSM Parameter Store for real deployments.
+
+6. Start the production stack (single-port, Nginx reverse proxy):
 
 ```bash
-nano .env
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Update with secure credentials for production.
-
-### Step 4: Start Services
+7. Verify services are running:
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f
 ```
 
-### Step 5: Verify Deployment
+8. Test endpoints from the EC2 instance or your browser:
 
 ```bash
-# Check running containers
-docker-compose -f docker-compose.prod.yml ps
-
-# Test frontend
-curl http://localhost/
-
-# Test API
-curl http://localhost/api/students
-
-# View logs
-docker-compose -f docker-compose.prod.yml logs -f
+curl http://localhost/        # frontend
+curl http://localhost/api/students   # API
 ```
 
-## Advanced Configuration
+If you see the frontend HTML and API JSON responses, the deployment is successful.
 
-### Use MongoDB Atlas
+---
 
-Replace `MONGODB_URI` in `.env`:
+## TLS / HTTPS (optional but recommended)
 
-```env
-MONGODB_URI=mongodb+srv://username:password@your-cluster.mongodb.net/student-management
-```
-
-### Use AWS RDS MongoDB
-
-```env
-MONGODB_URI=mongodb://admin:password@your-rds-endpoint:27017/student-management
-```
-
-### HTTPS with Let's Encrypt
+You can terminate TLS with an AWS Application Load Balancer (recommended) or install Certbot on the EC2 host and configure Nginx for TLS. For a quick Certbot + Nginx approach:
 
 ```bash
-# Install Certbot
-sudo apt-get install certbot python3-certbot-nginx -y
-
-# Get certificate
-sudo certbot certonly --standalone -d your-domain.com
-
-# Update nginx.conf with SSL certificates
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your.domain.example
 ```
 
-## Troubleshooting
+Follow Certbot prompts. After certificate issuance, Nginx will handle HTTPS traffic.
 
-### Containers Not Starting
+---
 
+## Running locally (development)
+
+Backend and frontend can be run locally without Docker during active development.
+
+Backend:
 ```bash
-# Check logs
-docker-compose logs -f
-
-# Verify MongoDB is healthy
-docker-compose ps
-
-# Wait 40+ seconds for MongoDB healthcheck
-```
-
-### Port Already in Use
-
-```bash
-# Find process using port
-sudo lsof -i :80
-sudo lsof -i :3000
-sudo lsof -i :5000
-
-# Kill process
-sudo kill -9 <PID>
-```
-
-### API Connection Issues
-
-```bash
-# Test backend from frontend container
-docker exec student-management-frontend curl http://app:5000/health
-
-# Check network
-docker network ls
-docker network inspect student-management_student-network
-```
-
-### MongoDB Connection Failed
-
-```bash
-# Check MongoDB logs
-docker logs student-management-mongodb
-
-# Verify credentials
-docker exec student-management-mongodb mongosh -u admin -p password --authenticationDatabase admin
-```
-
-## Development Workflow
-
-### Local Development (Without Docker)
-
-```bash
-# Backend
 npm install
 npm run dev
+```
 
-# Frontend (separate terminal)
+Frontend:
+```bash
 cd frontend
 npm install
 npm start
 ```
 
-### Update Code and Restart
+Or run everything with Docker Compose (dev):
 
 ```bash
-# After code changes
-docker-compose up --build
+docker compose up --build
 ```
 
-## Production Best Practices
+---
 
-1. **Use Environment Secrets**
-  ```bash
-  aws secretsmanager create-secret --name student-db-password
-  ```
+## Useful Docker Compose commands
 
-2. **Enable HTTPS**
-  - Use AWS ALB/NLB with SSL
-  - Or use Let's Encrypt with Certbot
+- Start (prod): `docker compose -f docker-compose.prod.yml up -d --build`
+- Start (dev): `docker compose up --build -d`
+- Stop: `docker compose -f docker-compose.prod.yml down`
+- View logs: `docker compose -f docker-compose.prod.yml logs -f`
+- Rebuild images: `docker compose -f docker-compose.prod.yml up -d --build`
 
-3. **Monitor Logs**
-  ```bash
-  docker-compose logs --tail=100 -f
-  ```
+---
 
-4. **Backup MongoDB**
-  ```bash
-  docker exec student-management-mongodb mongodump --username admin --password password --authenticationDatabase admin --out /backup
-  ```
+## Troubleshooting
 
-5. **Use Auto-scaling Groups**
-  - Use AWS ECS for better container orchestration
-  - Configure auto-scaling policies
+- If containers fail to start, inspect logs: `docker compose -f docker-compose.prod.yml logs -f`
+- If MongoDB is not healthy, allow extra startup time (initialization scripts run once).
+- If ports conflict, ensure no host service is binding to ports 80/443.
 
-## Performance Tips
+---
 
-- Frontend Nginx caching for static assets (configured in nginx.conf)
-- MongoDB indexes on email and rollNumber for fast lookups
-- API response compression (add gzip to Express)
-- CDN for static assets (optional)
+## Security & production notes
 
-## Security Checklist
+- Replace all default credentials before going live.
+- Use AWS Secrets Manager for sensitive values and inject them at runtime.
+- Use an Application Load Balancer + ACM for TLS in production.
+- Backup MongoDB regularly (mongodump or managed backups).
 
-- [ ] Change default MongoDB credentials
-- [ ] Use AWS Secrets Manager or environment variables
-- [ ] Enable HTTPS/SSL
-- [ ] Restrict Security Group to required ports
-- [ ] Enable MongoDB authentication
-- [ ] Regular database backups
-- [ ] Monitor CloudWatch logs
-- [ ] Use IAM roles for EC2 instances
+---
 
-## Technologies Used
+If you want, I can:
+- generate a sample `.env.production` and `.env.example`
+- add a systemd unit to auto-start Docker Compose on boot
+- add a short shell script to perform one-click deploy on a fresh EC2 instance
 
-- **Frontend**: React 18, CSS3
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB 6.0
-- **Web Server**: Nginx
-- **Containerization**: Docker, Docker Compose
-- **Cloud**: AWS EC2
-
-## License
-
-MIT License
-
-## Support
+Which of those would you like next?
 
 
 For detailed AWS EC2 deployment steps, see [AWS_EC2_DEPLOYMENT.md](AWS_EC2_DEPLOYMENT.md)

@@ -88,44 +88,38 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>📚 Student Management System</h1>
+      <header className="App-header" role="banner">
+        <h1>Student Management</h1>
         <p>Manage your students efficiently</p>
       </header>
 
-      <main className="App-main">
-        <div className="button-group">
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowForm(true)}
-          >
-            + Add New Student
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={fetchStudents}
-          >
-            🔄 Refresh
-          </button>
+      <main className="App-main" role="main">
+        <div className="container-main container">
+          <div className="card" aria-hidden={showForm ? 'true' : 'false'}>
+            <div className="button-group">
+              <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+                + Add New Student
+              </button>
+              <button className="btn btn-secondary" onClick={fetchStudents}>
+                🔄 Refresh
+              </button>
+            </div>
+          </div>
+
+          {showForm && (
+            <StudentForm
+              student={selectedStudent}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormClose}
+            />
+          )}
+
+          {loading ? (
+            <div className="loading">Loading students...</div>
+          ) : (
+            <StudentList students={students} onEdit={handleEdit} onDelete={handleDelete} />
+          )}
         </div>
-
-        {showForm && (
-          <StudentForm
-            student={selectedStudent}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormClose}
-          />
-        )}
-
-        {loading ? (
-          <div className="loading">Loading students...</div>
-        ) : (
-          <StudentList
-            students={students}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        )}
       </main>
 
       <footer className="App-footer">
